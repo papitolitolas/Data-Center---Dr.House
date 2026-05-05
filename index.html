@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trabalho Prático — Árvores de Decisão | ISCIM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0f0e0d;
+      --paper: #f5f0e8;
+      --cream: #ede8da;
+      --accent: #c0392b;
+      --gold: #b8860b;
+      --muted: #6b6560;
+      --border: #d0c8b8;
+      --code-bg: #1a1a1a;
+      --code-fg: #e8d5a3;
+      --green: #1a6b3c;
+      --blue: #1a3a6b;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ─────────────────────────────────────── */
+    header {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 3rem 2rem 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 40px,
+        rgba(255,255,255,.02) 40px,
+        rgba(255,255,255,.02) 41px
+      );
+      pointer-events: none;
+    }
+    .header-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .badge {
+      display: inline-block;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-family: 'DM Mono', monospace;
+      font-size: .7rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: .25rem .75rem;
+      margin-bottom: 1.25rem;
+    }
+    header h1 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: .5rem;
+      letter-spacing: -.02em;
+    }
+    header h1 em { color: #d4a44c; font-style: italic; }
+    .subtitle {
+      font-family: 'DM Mono', monospace;
+      font-size: .8rem;
+      color: #9b9690;
+      letter-spacing: .08em;
+      margin-top: .75rem;
+    }
+
+    /* ── MAIN LAYOUT ─────────────────────────────────── */
+    main { max-width: 960px; margin: 0 auto; padding: 2.5rem 2rem 5rem; }
+
+    /* ── SECTION TITLES ──────────────────────────────── */
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: .5rem;
+    }
+    h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      line-height: 1.2;
+    }
+    h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin: 1.75rem 0 .6rem;
+    }
+    p { margin-bottom: .9rem; color: #2a2723; }
+
+    /* ── CARDS / SECTIONS ────────────────────────────── */
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 2rem;
+      margin-bottom: 1.75rem;
+      box-shadow: 4px 4px 0 var(--border);
+    }
+    .card-accent { border-left: 4px solid var(--accent); }
+    .card-blue   { border-left: 4px solid var(--blue); }
+    .card-green  { border-left: 4px solid var(--green); }
+
+    /* ── STEP NUMBERS ────────────────────────────────── */
+    .steps { counter-reset: step; }
+    .step {
+      display: grid;
+      grid-template-columns: 3rem 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+      align-items: start;
+    }
+    .step-num {
+      width: 2.5rem; height: 2.5rem;
+      background: var(--ink);
+      color: var(--paper);
+      font-family: 'Fraunces', serif;
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: .1rem;
+    }
+
+    /* ── CODE BLOCKS ─────────────────────────────────── */
+    .code-wrap {
+      background: var(--code-bg);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 1rem 0 1.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,.25);
+    }
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #111;
+      padding: .5rem 1rem;
+      border-bottom: 1px solid #333;
+    }
+    .code-title {
+      font-family: 'DM Mono', monospace;
+      font-size: .7rem;
+      color: #666;
+      letter-spacing: .1em;
+    }
+    .code-dots { display: flex; gap: .4rem; }
+    .code-dots span {
+      width: 10px; height: 10px; border-radius: 50%;
+    }
+    .code-dots span:nth-child(1) { background: #ff5f57; }
+    .code-dots span:nth-child(2) { background: #febc2e; }
+    .code-dots span:nth-child(3) { background: #28c840; }
+    pre {
+      font-family: 'DM Mono', monospace;
+      font-size: .8rem;
+      color: var(--code-fg);
+      padding: 1.25rem 1.5rem;
+      overflow-x: auto;
+      line-height: 1.8;
+    }
+    .kw  { color: #d4a44c; }   /* keywords */
+    .fn  { color: #7ec8e3; }   /* functions */
+    .str { color: #a8d08d; }   /* strings */
+    .cm  { color: #6a7a6a; font-style: italic; } /* comments */
+    .nb  { color: #e8956d; }   /* numbers/builtins */
+    .var { color: #e8d5a3; }   /* variables */
+
+    /* ── DATASET SWITCHER ────────────────────────────── */
+    .ds-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .ds-card {
+      border: 2px solid var(--border);
+      padding: 1rem;
+      border-radius: 2px;
+      cursor: default;
+      transition: border-color .2s, background .2s;
+      background: var(--cream);
+    }
+    .ds-card:hover { border-color: var(--ink); }
+    .ds-name {
+      font-family: 'DM Mono', monospace;
+      font-size: .75rem;
+      font-weight: 500;
+      letter-spacing: .06em;
+      color: var(--ink);
+      margin-bottom: .3rem;
+    }
+    .ds-desc { font-size: .78rem; color: var(--muted); }
+    .ds-tag {
+      display: inline-block;
+      margin-top: .5rem;
+      font-family: 'DM Mono', monospace;
+      font-size: .6rem;
+      padding: .1rem .4rem;
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    /* ── CALLOUTS ────────────────────────────────────── */
+    .callout {
+      border-left: 3px solid var(--gold);
+      background: #fdf8ec;
+      padding: .85rem 1rem;
+      margin: 1rem 0;
+      font-size: .875rem;
+    }
+    .callout strong { color: var(--gold); }
+
+    /* ── OBJECTIVES TABLE ────────────────────────────── */
+    table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+    th {
+      text-align: left;
+      font-family: 'DM Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 2px solid var(--border);
+      padding: .5rem .75rem;
+    }
+    td { padding: .6rem .75rem; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    .tag {
+      font-family: 'DM Mono', monospace;
+      font-size: .65rem;
+      padding: .15rem .5rem;
+      border-radius: 2px;
+    }
+    .tag-ob { background: #eaf4ef; color: var(--green); }
+    .tag-fa { background: #fce8e6; color: var(--accent); }
+
+    /* ── FOOTER ──────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-family: 'DM Mono', monospace;
+      font-size: .7rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── SEPARATOR ───────────────────────────────────── */
+    .sep {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 2.5rem 0;
+    }
+
+    /* ── PILL ────────────────────────────────────────── */
+    .pill {
+      display: inline-block;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      font-family: 'DM Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: .08em;
+      padding: .15rem .55rem;
+      border-radius: 99px;
+      color: var(--muted);
+    }
+
+    .highlight { background: #fff3d4; padding: .05em .2em; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="badge">ISCIM · Exploração de Dados</div>
+    <h1>Trabalho Prático —<br><em>Árvores de Decisão</em></h1>
+    <p class="subtitle">Decision Trees em Python · Scikit-learn · Matplotlib · Seaborn</p>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── INTRODUÇÃO ──────────────────────────────────── -->
+  <section class="card card-accent">
+    <div class="section-label">Enquadramento</div>
+    <h2>Sobre este Trabalho</h2>
+    <p>
+      Este trabalho prático aborda a construção e avaliação de <strong>Árvores de Decisão (Decision Trees)</strong>
+      aplicadas a problemas de classificação. O código está estruturado de forma modular para que o
+      docente possa <span class="highlight">trocar o dataset facilmente</span>, bastando alterar uma única
+      variável de configuração no início do notebook.
+    </p>
+    <p>
+      Toda a pipeline — desde o pré-processamento até à visualização da árvore e métricas de avaliação —
+      adapta-se automaticamente ao novo conjunto de dados.
+    </p>
+    <div class="callout">
+      <strong>📁 Para o Docente:</strong> Para trocar o dataset, basta editar a secção
+      <em>"Configuração do Dataset"</em> no topo do notebook e escolher um dos datasets disponíveis
+      (ou carregar o seu próprio ficheiro CSV).
+    </div>
+  </section>
+
+  <!-- ── OBJETIVOS ───────────────────────────────────── -->
+  <section class="card">
+    <div class="section-label">Competências</div>
+    <h2>Objetivos de Aprendizagem</h2>
+    <table>
+      <thead>
+        <tr><th>Competência</th><th>Tipo</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Carregar e explorar um dataset com Pandas</td><td><span class="tag tag-ob">Obrigatório</span></td></tr>
+        <tr><td>Pré-processar dados (valores nulos, codificação, normalização)</td><td><span class="tag tag-ob">Obrigatório</span></td></tr>
+        <tr><td>Construir e treinar uma Árvore de Decisão com Scikit-learn</td><td><span class="tag tag-ob">Obrigatório</span></td></tr>
+        <tr><td>Avaliar o modelo (Accuracy, F1, Matriz de Confusão)</td><td><span class="tag tag-ob">Obrigatório</span></td></tr>
+        <tr><td>Visualizar a Árvore e interpretar as regras de decisão</td><td><span class="tag tag-ob">Obrigatório</span></td></tr>
+        <tr><td>Otimizar hiperparâmetros com GridSearchCV</td><td><span class="tag tag-fa">Facultativo</span></td></tr>
+        <tr><td>Comparar profundidades da árvore e analisar overfitting</td><td><span class="tag tag-fa">Facultativo</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── DATASETS ────────────────────────────────────── -->
+  <section class="card card-blue">
+    <div class="section-label">Flexibilidade</div>
+    <h2>Datasets Disponíveis</h2>
+    <p>O notebook suporta os seguintes datasets <em>out-of-the-box</em>.
+       O docente define qual usar através da variável <code class="pill">DATASET</code>:</p>
+
+    <div class="ds-grid">
+      <div class="ds-card">
+        <div class="ds-name">Iris</div>
+        <div class="ds-desc">Classificação de espécies de flores. Clássico para iniciantes.</div>
+        <span class="ds-tag">sklearn</span>
+      </div>
+      <div class="ds-card">
+        <div class="ds-name">Wine</div>
+        <div class="ds-desc">Classificação de tipos de vinho por propriedades químicas.</div>
+        <span class="ds-tag">sklearn</span>
+      </div>
+      <div class="ds-card">
+        <div class="ds-name">Breast Cancer</div>
+        <div class="ds-desc">Diagnóstico de cancro (maligno/benigno). Binário.</div>
+        <span class="ds-tag">sklearn</span>
+      </div>
+      <div class="ds-card">
+        <div class="ds-name">CSV Externo</div>
+        <div class="ds-desc">Qualquer ficheiro CSV fornecido pelo docente.</div>
+        <span class="ds-tag">custom</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ── INSTALAÇÃO ──────────────────────────────────── -->
+  <section>
+    <div class="section-label">Passo 0</div>
+    <h2>Instalação de Dependências</h2>
+    <p>Execute no terminal antes de abrir o notebook:</p>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-title">TERMINAL</div>
+      </div>
+      <pre><span class="cm"># Instalar dependências</span>
+pip install numpy pandas scikit-learn matplotlib seaborn jupyter
+
+<span class="cm"># Abrir o notebook</span>
+jupyter notebook trabalho_dt.ipynb</pre>
+    </div>
+  </section>
+
+  <!-- ── CÓDIGO PRINCIPAL ────────────────────────────── -->
+  <section>
+    <div class="section-label">Notebook Completo</div>
+    <h2>Código Python — <em>trabalho_dt.ipynb</em></h2>
+    <p>As células abaixo reproduzem o conteúdo completo do notebook, organizadas por secções.</p>
+
+    <!-- CÉLULA 1 -->
+    <h3>📦 Célula 1 — Importações</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-title">PYTHON</div>
+      </div>
+      <pre><span class="cm"># ── Importações ────────────────────────────────────────────────────</span>
+<span class="kw">import</span> <span class="var">numpy</span> <span class="kw">as</span> <span class="var">np</span>
+<span class="kw">import</span> <span class="var">pandas</span> <span class="kw">as</span> <span class="var">pd</span>
+<span class="kw">import</span> <span class="var">matplotlib.pyplot</span> <span class="kw">as</span> <span class="var">plt</span>
+<span class="kw">import</span> <span class="var">seaborn</span> <span class="kw">as</span> <span class="var">sns</span>
+
+<span class="kw">from</span> <span class="var">sklearn</span> <span class="kw">import</span> <span class="var">datasets</span>
+<span class="kw">from</span> <span class="var">sklearn.model_selection</span> <span class="kw">import</span> <span class="var">train_test_split, GridSearchCV, cross_val_score</span>
+<span class="kw">from</span> <span class="var">sklearn.tree</span> <span class="kw">import</span> <span class="var">DecisionTreeClassifier, plot_tree, export_text</span>
+<span class="kw">from</span> <span class="var">sklearn.preprocessing</span> <span class="kw">import</span> <span class="var">LabelEncoder, StandardScaler</span>
+<span class="kw">from</span> <span class="var">sklearn.metrics</span> <span class="kw">import</span> (
+    <span class="var">accuracy_score, classification_report,
+    confusion_matrix, ConfusionMatrixDisplay</span>
+)
+
+<span class="var">sns</span>.<span class="fn">set_theme</span>(<span class="var">style</span>=<span class="str">"whitegrid"</span>, <span class="var">palette</span>=<span class="str">"muted"</span>)
+<span class="var">plt</span>.<span class="fn">rcParams</span>[<span class="str">'figure.dpi'</span>] = <span class="nb">120</span>
+<span class="fn">print</span>(<span class="str">"✅ Bibliotecas carregadas com sucesso!"</span>)</pre>
+    </div>
+
+    <!-- CÉLULA 2 -->
+    <h3>⚙️ Célula 2 — Configuração (o docente altera aqui)</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-title">PYTHON</div>
+      </div>
+      <pre><span class="cm"># ═══════════════════════════════════════════════════════════════════
+# ⚙️  CONFIGURAÇÃO DO DATASET — O DOCENTE ALTERA APENAS ESTA SECÇÃO
+# ═══════════════════════════════════════════════════════════════════
+#
+# Opções disponíveis:
+#   "iris"          → dataset Iris (sklearn)
+#   "wine"          → dataset Wine (sklearn)
+#   "breast_cancer" → dataset Breast Cancer (sklearn)
+#   "csv"           → ficheiro CSV externo (definir CAMINHO_CSV)
+#
+DATASET = <span class="str">"iris"</span>
+
+<span class="cm"># Se DATASET == "csv", definir o caminho e coluna alvo:</span>
+CAMINHO_CSV    = <span class="str">"dados.csv"</span>
+COLUNA_ALVO   = <span class="str">"target"</span>   <span class="cm"># nome da coluna a prever</span>
+
+<span class="cm"># Parâmetros da Árvore (podem ser ajustados)</span>
+MAX_DEPTH      = <span class="nb">4</span>          <span class="cm"># profundidade máxima</span>
+TEST_SIZE      = <span class="nb">0.25</span>       <span class="cm"># proporção do conjunto de teste</span>
+RANDOM_STATE   = <span class="nb">42</span>         <span class="cm"># semente para reprodutibilidade</span>
+CRITERION      = <span class="str">"gini"</span>    <span class="cm"># "gini" ou "entropy"</span>
+<span class="cm"># ═══════════════════════════════════════════════════════════════════</span></pre>
+    </div>
+
+    <!-- CÉLULA 3 -->
+    <h3>📂 Célula 3 — Carregamento do Dataset</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-title">PYTHON</div>
+      </div>
+      <pre><span class="kw">def</span> <span class="fn">carregar_dataset</span>(<span class="var">nome</span>):
+    <span class="str">"""Carrega o dataset escolhido e devolve (X, y, nomes_features, nomes_classes)."""</span>
+
+    <span class="kw">if</span> <span class="var">nome</span> == <span class="str">"iris"</span>:
+        <span class="var">ds</span> = <span class="var">datasets</span>.<span class="fn">load_iris</span>()
+    <span class="kw">elif</span> <span class="var">nome</span> == <span class="str">"wine"</span>:
+        <span class="var">ds</span> = <span class="var">datasets</span>.<span class="fn">load_wine</span>()
+    <span class="kw">elif</span> <span class="var">nome</span> == <span class="str">"breast_cancer"</span>:
+        <span class="var">ds</span> = <span class="var">datasets</span>.<span class="fn">load_breast_cancer</span>()
+    <span class="kw">elif</span> <span class="var">nome</span> == <span class="str">"csv"</span>:
+        <span class="var">df</span> = <span class="var">pd</span>.<span class="fn">read_csv</span>(<span class="var">CAMINHO_CSV</span>)
+        <span class="var">X_raw</span> = <span class="var">df</span>.<span class="fn">drop</span>(<span class="var">columns</span>=[<span class="var">COLUNA_ALVO</span>])
+        <span class="var">y_raw</span> = <span class="var">df</span>[<span class="var">COLUNA_ALVO</span>]
+
+        <span class="cm"># Codificar colunas categóricas automaticamente</span>
+        <span class="kw">for</span> <span class="var">col</span> <span class="kw">in</span> <span class="var">X_raw</span>.<span class="fn">select_dtypes</span>(<span class="var">include</span>=<span class="str">"object"</span>).<span class="var">columns</span>:
+            <span class="var">X_raw</span>[<span class="var">col</span>] = <span class="var">LabelEncoder</span>().<span class="fn">fit_transform</span>(<span class="var">X_raw</span>[<span class="var">col</span>])
+
+        <span class="var">le</span> = <span class="var">LabelEncoder</span>()
+        <span class="var">y_enc</span> = <span class="var">le</span>.<span class="fn">fit_transform</span>(<span class="var">y_raw</span>)
+        <span class="kw">return</span> (
+            <span class="var">X_raw</span>.<span class="fn">fillna</span>(<span class="var">X_raw</span>.<span class="fn">median</span>(<span class="var">numeric_only</span>=<span class="nb">True</span>)).<span class="fn">values</span>,
+            <span class="var">y_enc</span>,
+            <span class="var">X_raw</span>.<span class="var">columns</span>.<span class="fn">tolist</span>(),
+            <span class="var">le</span>.<span class="var">classes_</span>.<span class="fn">tolist</span>()
+        )
+    <span class="kw">else</span>:
+        <span class="kw">raise</span> <span class="fn">ValueError</span>(<span class="str">f"Dataset desconhecido: {nome}"</span>)
+
+    <span class="kw">return</span> (
+        <span class="var">ds</span>.<span class="var">data</span>,
+        <span class="var">ds</span>.<span class="var">target</span>,
+        <span class="var">ds</span>.<span class="var">feature_names</span>.<span class="fn">tolist</span>()
+            <span class="kw">if</span> <span class="fn">hasattr</span>(<span class="var">ds</span>.<span class="var">feature_names</span>, <span class="str">'tolist'</span>)
+            <span class="kw">else</span> <span class="fn">list</span>(<span class="var">ds</span>.<span class="var">feature_names</span>),
+        <span class="var">ds</span>.<span class="var">target_names</span>.<span class="fn">tolist</span>()
+    )
+
+
+<span class="var">X</span>, <span class="var">y</span>, <span class="var">FEATURES</span>, <span class="var">CLASSES</span> = <span class="fn">carregar_dataset</span>(<span class="var">DATASET</span>)
+<span class="fn">print</span>(<span class="str">f"Dataset: {DATASET.upper()}"</span>)
+<span class="fn">print</span>(<span class="str">f"Amostras: {X.shape[0]}  |  Features: {X.shape[1]}  |  Classes: {len(CLASSES)}"</span>)
+<span class="fn">print</span>(<span class="str">f"Classes: {CLASSES}"</span>)</pre>
+    </div>
+
+    <!-- CÉLULA 4 -->
+    <h3>🔍 Célula 4 — Análise Exploratória (EDA)</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-title">PYTHON</div>
+      </div>
+      <pre><span class="cm"># Criar DataFrame para EDA</span>
+<span class="var">df</span> = <span class="var">pd</span>.<span class="fn">DataFrame</span>(<span class="var">X</span>, <span class="var">columns</span>=<span class="var">FEATURES</span>)
+<span class="var">df</span>[<span class="str">'classe'</span>] = [<span class="var">CLASSES</span>[<span class="var">i</span>] <span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="var">y</span>]
+
+<span class="fn">print</span>(<span class="str">"═"</span> * <span class="nb">50</span>)
+<span class="fn">print</span>(<span class="str">"PRIMEIRAS LINHAS"</span>)
+<span class="fn">display</span>(<span class="var">df</span>.<span class="fn">head</span>(<span class="nb">5</span>))
+
+<span class="fn">print</span>(<span class="str">"\nESTATÍSTICAS DESCRITIVAS"</span>)
+<span class="fn">display</span>(<span class="var">df</span>.<span class="fn">describe</span>().<span class="fn">round</span>(<span class="nb">2</span>))
+
+<span class="fn">print</span>(<span class="str">"\nVALORES EM FALTA"</span>)
+<span class="fn">display</span>(<span class="var">df</span>.<span class="fn">isnull</span>().<span class="fn">sum</span>())
+
+<span class="cm"># ── Distribuição das Classes ──────────────────────────────────────</span>
+<span class="var">fig</span>, <span class="var">axes</span> = <span class="var">plt</span>.<span class="fn">subplots</span>(<span class="nb">1</span>, <span class="nb">2</span>, <span class="var">figsize</span>=(<span class="nb">13</span>, <span class="nb">4</span>))
+
+<span class="var">contagem</span> = <span class="var">df</span>[<span class="str">'classe'</span>].<span class="fn">value_counts</span>()
+<span class="var">axes</span>[<span class="nb">0</span>].<span class="fn">bar</span>(<span class="var">contagem</span>.<span class="var">index</span>, <span class="var">contagem</span>.<span class="var">values</span>,
+             <span class="var">color</span>=<span class="var">sns</span>.<span class="fn">color_palette</span>(<span class="str">"muted"</span>, <span class="fn">len</span>(<span class="var">contagem</span>)))
+<span class="var">axes</span>[<span class="nb">0</span>].<span class="fn">set_title</span>(<span class="str">"Distribuição das Classes"</span>)
+<span class="var">axes</span>[<span class="nb">0</span>].<span class="fn">set_xlabel</span>(<span class="str">"Classe"</span>)
+<span class="var">axes</span>[<span class="nb">0</span>].<span class="fn">set_ylabel</span>(<span class="str">"Contagem"</span>)
+
+<span class="cm"># Correlação entre features</span>
+<span class="var">corr</span> = <span class="var">pd</span>.<span class="fn">DataFrame</span>(<span class="var">X</span>, <span class="var">columns</span>=<span class="var">FEATURES</span>).<span class="fn">corr</span>()
+<span class="var">sns</span>.<span class="fn">heatmap</span>(<span class="var">corr</span>, <span class="var">ax</span>=<span class="var">axes</span>[<span class="nb">1</span>], <span class="var">annot</span>=<span class="nb">True</span>, <span class="var">fmt</span>=<span class="str">".1f"</span>,
+            <span class="var">cmap</span>=<span class="str">"coolwarm"</span>, <span class="var">linewidths</span>=<span class="nb">.5</span>, <span class="var">square</span>=<span class="nb">True</span>)
+<span class="var">axes</span>[<span class="nb">1</span>].<span class="fn">set_title</span>(<span class="str">"Correlação entre Features"</span>)
+
+<span class="var">plt</span>.<span class="fn">tight_layout</span>()
+<span class="var">plt</span>.<span class="fn">show</span>()</pre>
+    </div>
+
+    <!-- CÉLULA 5 -->
+    <h3>✂️ Célula 5 — Divisão dos Dados e Treino</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-title">PYTHON</div>
+      </div>
+      <pre><span class="cm"># ── Divisão Treino / Teste ────────────────────────────────────────</span>
+<span class="var">X_treino</span>, <span class="var">X_teste</span>, <span class="var">y_treino</span>, <span class="var">y_teste</span> = <span class="fn">train_test_split</span>(
+    <span class="var">X</span>, <span class="var">y</span>,
+    <span class="var">test_size</span>=<span class="var">TEST_SIZE</span>,
+    <span class="var">stratify</span>=<span class="var">y</span>,
+    <span class="var">random_state</span>=<span class="var">RANDOM_STATE</span>
+)
+<span class="fn">print</span>(<span class="str">f"Treino: {len(X_treino)} amostras  |  Teste: {len(X_teste)} amostras"</span>)
+
+<span class="cm"># ── Treinar a Árvore de Decisão ───────────────────────────────────</span>
+<span class="var">modelo</span> = <span class="fn">DecisionTreeClassifier</span>(
+    <span class="var">max_depth</span>=<span class="var">MAX_DEPTH</span>,
+    <span class="var">criterion</span>=<span class="var">CRITERION</span>,
+    <span class="var">random_state</span>=<span class="var">RANDOM_STATE</span>
+)
+<span class="var">modelo</span>.<span class="fn">fit</span>(<span class="var">X_treino</span>, <span class="var">y_treino</span>)
+<span class="fn">print</span>(<span class="str">"✅ Modelo treinado!"</span>)
+
+<span class="cm"># Validação Cruzada (5-fold)</span>
+<span class="var">scores_cv</span> = <span class="fn">cross_val_score</span>(<span class="var">modelo</span>, <span class="var">X</span>, <span class="var">y</span>, <span class="var">cv</span>=<span class="nb">5</span>, <span class="var">scoring</span>=<span class="str">"accuracy"</span>)
+<span class="fn">print</span>(<span class="str">f"Accuracy (CV 5-fold): {scores_cv.mean():.3f} ± {scores_cv.std():.3f}"</span>)</pre>
+    </div>
+
+    <!-- CÉLULA 6 -->
+    <h3>📊 Célula 6 — Avaliação do Modelo</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-title">PYTHON</div>
+      </div>
+      <pre><span class="var">y_pred</span> = <span class="var">modelo</span>.<span class="fn">predict</span>(<span class="var">X_teste</span>)
+
+<span class="cm"># ── Métricas gerais ───────────────────────────────────────────────</span>
+<span class="fn">print</span>(<span class="str">f"Accuracy no Teste : {accuracy_score(y_teste, y_pred):.4f}"</span>)
+<span class="fn">print</span>(<span class="str">"\nRelatório de Classificação:"</span>)
+<span class="fn">print</span>(<span class="fn">classification_report</span>(<span class="var">y_teste</span>, <span class="var">y_pred</span>, <span class="var">target_names</span>=<span class="var">CLASSES</span>))
+
+<span class="cm"># ── Matriz de Confusão ────────────────────────────────────────────</span>
+<span class="var">fig</span>, <span class="var">ax</span> = <span class="var">plt</span>.<span class="fn">subplots</span>(<span class="var">figsize</span>=(<span class="nb">6</span>, <span class="nb">5</span>))
+<span class="fn">ConfusionMatrixDisplay</span>.<span class="fn">from_predictions</span>(
+    <span class="var">y_teste</span>, <span class="var">y_pred</span>,
+    <span class="var">display_labels</span>=<span class="var">CLASSES</span>,
+    <span class="var">cmap</span>=<span class="str">"Blues"</span>,
+    <span class="var">ax</span>=<span class="var">ax</span>
+)
+<span class="var">ax</span>.<span class="fn">set_title</span>(<span class="str">"Matriz de Confusão"</span>)
+<span class="var">plt</span>.<span class="fn">tight_layout</span>()
+<span class="var">plt</span>.<span class="fn">show</span>()</pre>
+    </div>
+
+    <!-- CÉLULA 7 -->
+    <h3>🌳 Célula 7 — Visualização da Árvore</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-title">PYTHON</div>
+      </div>
+      <pre><span class="cm"># ── Visualização Gráfica ──────────────────────────────────────────</span>
+<span class="var">fig</span>, <span class="var">ax</span> = <span class="var">plt</span>.<span class="fn">subplots</span>(<span class="var">figsize</span>=(<span class="nb">18</span>, <span class="nb">8</span>))
+<span class="fn">plot_tree</span>(
+    <span class="var">modelo</span>,
+    <span class="var">feature_names</span>=<span class="var">FEATURES</span>,
+    <span class="var">class_names</span>=<span class="var">CLASSES</span>,
+    <span class="var">filled</span>=<span class="nb">True</span>,
+    <span class="var">rounded</span>=<span class="nb">True</span>,
+    <span class="var">fontsize</span>=<span class="nb">9</span>,
+    <span class="var">ax</span>=<span class="var">ax</span>
+)
+<span class="var">ax</span>.<span class="fn">set_title</span>(<span class="str">f"Árvore de Decisão — {DATASET.upper()} (profundidade={MAX_DEPTH})"</span>,
+             <span class="var">fontsize</span>=<span class="nb">13</span>)
+<span class="var">plt</span>.<span class="fn">tight_layout</span>()
+<span class="var">plt</span>.<span class="fn">savefig</span>(<span class="str">"arvore_decisao.png"</span>, <span class="var">dpi</span>=<span class="nb">150</span>, <span class="var">bbox_inches</span>=<span class="str">"tight"</span>)
+<span class="var">plt</span>.<span class="fn">show</span>()
+
+<span class="cm"># Regras em texto</span>
+<span class="fn">print</span>(<span class="str">"\n── Regras de Decisão ──\n"</span>)
+<span class="fn">print</span>(<span class="fn">export_text</span>(<span class="var">modelo</span>, <span class="var">feature_names</span>=<span class="var">FEATURES</span>))</pre>
+    </div>
+
+    <!-- CÉLULA 8 -->
+    <h3>📌 Célula 8 — Importância das Features</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-title">PYTHON</div>
+      </div>
+      <pre><span class="var">importancias</span> = <span class="var">pd</span>.<span class="fn">Series</span>(
+    <span class="var">modelo</span>.<span class="var">feature_importances_</span>, <span class="var">index</span>=<span class="var">FEATURES</span>
+).<span class="fn">sort_values</span>(<span class="var">ascending</span>=<span class="nb">False</span>)
+
+<span class="var">fig</span>, <span class="var">ax</span> = <span class="var">plt</span>.<span class="fn">subplots</span>(<span class="var">figsize</span>=(<span class="nb">8</span>, <span class="nb">4</span>))
+<span class="var">importancias</span>.<span class="fn">plot</span>(<span class="var">kind</span>=<span class="str">"barh"</span>, <span class="var">ax</span>=<span class="var">ax</span>,
+                   <span class="var">color</span>=<span class="var">sns</span>.<span class="fn">color_palette</span>(<span class="str">"muted"</span>, <span class="fn">len</span>(<span class="var">importancias</span>)))
+<span class="var">ax</span>.<span class="fn">set_title</span>(<span class="str">"Importância das Features (Gini)"</span>)
+<span class="var">ax</span>.<span class="fn">set_xlabel</span>(<span class="str">"Importância relativa"</span>)
+<span class="var">ax</span>.<span class="fn">invert_yaxis</span>()
+<span class="var">plt</span>.<span class="fn">tight_layout</span>()
+<span class="var">plt</span>.<span class="fn">show</span>()
+
+<span class="fn">print</span>(<span class="var">importancias</span>.<span class="fn">to_string</span>())</pre>
+    </div>
+
+    <!-- CÉLULA 9 OPCIONAL -->
+    <h3>🔬 Célula 9 (Facultativa) — Análise de Overfitting por Profundidade</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-title">PYTHON</div>
+      </div>
+      <pre><span class="var">profundidades</span> = <span class="fn">range</span>(<span class="nb">1</span>, <span class="nb">15</span>)
+<span class="var">acc_treino</span>, <span class="var">acc_teste</span> = [], []
+
+<span class="kw">for</span> <span class="var">d</span> <span class="kw">in</span> <span class="var">profundidades</span>:
+    <span class="var">m</span> = <span class="fn">DecisionTreeClassifier</span>(<span class="var">max_depth</span>=<span class="var">d</span>, <span class="var">random_state</span>=<span class="var">RANDOM_STATE</span>)
+    <span class="var">m</span>.<span class="fn">fit</span>(<span class="var">X_treino</span>, <span class="var">y_treino</span>)
+    <span class="var">acc_treino</span>.<span class="fn">append</span>(<span class="fn">accuracy_score</span>(<span class="var">y_treino</span>, <span class="var">m</span>.<span class="fn">predict</span>(<span class="var">X_treino</span>)))
+    <span class="var">acc_teste</span>.<span class="fn">append</span>(<span class="fn">accuracy_score</span>(<span class="var">y_teste</span>, <span class="var">m</span>.<span class="fn">predict</span>(<span class="var">X_teste</span>)))
+
+<span class="var">fig</span>, <span class="var">ax</span> = <span class="var">plt</span>.<span class="fn">subplots</span>(<span class="var">figsize</span>=(<span class="nb">9</span>, <span class="nb">4</span>))
+<span class="var">ax</span>.<span class="fn">plot</span>(<span class="var">profundidades</span>, <span class="var">acc_treino</span>, <span class="var">marker</span>=<span class="str">"o"</span>, <span class="var">label</span>=<span class="str">"Treino"</span>)
+<span class="var">ax</span>.<span class="fn">plot</span>(<span class="var">profundidades</span>, <span class="var">acc_teste</span>,  <span class="var">marker</span>=<span class="str">"s"</span>, <span class="var">label</span>=<span class="str">"Teste"</span>)
+<span class="var">ax</span>.<span class="fn">axvline</span>(<span class="var">MAX_DEPTH</span>, <span class="var">color</span>=<span class="str">"red"</span>, <span class="var">ls</span>=<span class="str">"--"</span>, <span class="var">lw</span>=<span class="nb">1</span>, <span class="var">label</span>=<span class="str">f"max_depth={MAX_DEPTH}"</span>)
+<span class="var">ax</span>.<span class="fn">set_xlabel</span>(<span class="str">"Profundidade da Árvore"</span>)
+<span class="var">ax</span>.<span class="fn">set_ylabel</span>(<span class="str">"Accuracy"</span>)
+<span class="var">ax</span>.<span class="fn">set_title</span>(<span class="str">"Análise de Overfitting por Profundidade"</span>)
+<span class="var">ax</span>.<span class="fn">legend</span>()
+<span class="var">plt</span>.<span class="fn">tight_layout</span>()
+<span class="var">plt</span>.<span class="fn">show</span>()</pre>
+    </div>
+
+    <!-- CÉLULA 10 OPCIONAL -->
+    <h3>🎛️ Célula 10 (Facultativa) — GridSearchCV</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-title">PYTHON</div>
+      </div>
+      <pre><span class="var">param_grid</span> = {
+    <span class="str">"max_depth"</span>       : [<span class="nb">2</span>, <span class="nb">3</span>, <span class="nb">4</span>, <span class="nb">5</span>, <span class="nb">6</span>, <span class="nb">8</span>, <span class="nb">None</span>],
+    <span class="str">"criterion"</span>       : [<span class="str">"gini"</span>, <span class="str">"entropy"</span>],
+    <span class="str">"min_samples_split"</span>: [<span class="nb">2</span>, <span class="nb">5</span>, <span class="nb">10</span>],
+    <span class="str">"min_samples_leaf"</span> : [<span class="nb">1</span>, <span class="nb">2</span>, <span class="nb">4</span>],
+}
+
+<span class="var">grid</span> = <span class="fn">GridSearchCV</span>(
+    <span class="fn">DecisionTreeClassifier</span>(<span class="var">random_state</span>=<span class="var">RANDOM_STATE</span>),
+    <span class="var">param_grid</span>,
+    <span class="var">cv</span>=<span class="nb">5</span>,
+    <span class="var">scoring</span>=<span class="str">"accuracy"</span>,
+    <span class="var">n_jobs</span>=<span class="nb">-1</span>,
+    <span class="var">verbose</span>=<span class="nb">1</span>
+)
+<span class="var">grid</span>.<span class="fn">fit</span>(<span class="var">X_treino</span>, <span class="var">y_treino</span>)
+
+<span class="fn">print</span>(<span class="str">"Melhores hiperparâmetros:"</span>, <span class="var">grid</span>.<span class="var">best_params_</span>)
+<span class="fn">print</span>(<span class="str">f"Melhor Accuracy (CV) : {grid.best_score_:.4f}"</span>)
+
+<span class="var">melhor</span> = <span class="var">grid</span>.<span class="var">best_estimator_</span>
+<span class="var">y_pred_otimizado</span> = <span class="var">melhor</span>.<span class="fn">predict</span>(<span class="var">X_teste</span>)
+<span class="fn">print</span>(<span class="str">f"Accuracy no Teste (otimizado): {accuracy_score(y_teste, y_pred_otimizado):.4f}"</span>)</pre>
+    </div>
+
+  </section>
+
+  <hr class="sep">
+
+  <!-- ── ESTRUTURA DO PROJETO ────────────────────────── -->
+  <section class="card card-green">
+    <div class="section-label">GitHub</div>
+    <h2>Estrutura do Repositório</h2>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-title">ESTRUTURA</div>
+      </div>
+      <pre>trabalho-pratico-dt/
+│
+├── trabalho_dt.ipynb       ← Notebook principal
+├── requirements.txt        ← Dependências
+├── dados.csv               ← Dataset externo (opcional)
+├── arvore_decisao.png      ← Imagem gerada automaticamente
+├── index.html              ← Esta página (GitHub Pages)
+└── README.md               ← Instruções para o docente</pre>
+    </div>
+
+    <h3>requirements.txt</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-title">REQUIREMENTS.TXT</div>
+      </div>
+      <pre>numpy>=1.24
+pandas>=2.0
+scikit-learn>=1.3
+matplotlib>=3.7
+seaborn>=0.12
+jupyter>=1.0</pre>
+    </div>
+  </section>
+
+  <!-- ── README ──────────────────────────────────────── -->
+  <section class="card">
+    <div class="section-label">GitHub Pages</div>
+    <h2>Como Publicar no GitHub</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <strong>Criar repositório público</strong> no GitHub com o nome
+          <code class="pill">trabalho-pratico-dt</code>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <strong>Fazer upload</strong> de todos os ficheiros:
+          <code class="pill">index.html</code>, <code class="pill">trabalho_dt.ipynb</code>,
+          <code class="pill">requirements.txt</code>, <code class="pill">README.md</code>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          Em <strong>Settings → Pages</strong>, selecionar
+          <em>Branch: main / (root)</em> e clicar em <strong>Save</strong>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          A página fica disponível em:<br>
+          <code class="pill">https://[utilizador].github.io/trabalho-pratico-dt/</code>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div>
+          Para correr o notebook online, basta abrir o repositório no
+          <strong>Google Colab</strong> ou <strong>Binder</strong> — nenhuma
+          instalação local é necessária.
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>💡 Colab direto:</strong> Coloque o link
+      <code>https://colab.research.google.com/github/[utilizador]/trabalho-pratico-dt/blob/main/trabalho_dt.ipynb</code>
+      no README para acesso imediato pelo docente e colegas.
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  ISCIM · Cadeira de Exploração de Dados · Trabalho Prático — Decision Trees
+</footer>
+
+</body>
+</html>
